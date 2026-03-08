@@ -1,0 +1,91 @@
+Financial Tracking
+
+SELECT
+    ID_Tarea AS task_id,
+    Proyecto AS project_name,vl
+    Modulo AS module,
+    Tarea AS task_name,
+    Responsable AS responsible,
+
+    CAST(Horas_Estimadas AS FLOAT) AS estimated_hours,
+    CAST(Costo_Hora AS FLOAT) AS hourly_cost,
+
+    -- Budget calculation
+    CAST(Horas_Estimadas AS FLOAT) * CAST(Costo_Hora AS FLOAT) AS task_budget
+
+FROM project_tasks_raw;
+_________________________________________
+
+Execution Tracking)
+
+Clasificas tareas:
+
+Completed
+
+In Progress
+
+Not Started
+
+SQL
+-- Normalize task status
+
+SELECT
+    ID_Tarea,
+    Tarea,
+
+    CASE
+        WHEN Estado IN ('Hecho','Done','Completed') THEN 'Completed'
+        WHEN Estado IN ('En progreso','In Progress') THEN 'In Progress'
+        WHEN Estado IN ('Pendiente','No iniciado') THEN 'Not Started'
+        ELSE 'Undefined'
+    END AS task_status
+
+FROM project_tasks_raw;
+Cálculo progreso del proyecto
+SELECT
+    COUNT(*) AS total_tasks,
+
+    SUM(CASE WHEN Estado = 'Hecho' THEN 1 ELSE 0 END) AS completed_tasks,
+
+    ROUND(
+        SUM(CASE WHEN Estado = 'Hecho' THEN 1 ELSE 0 END) * 1.0 /
+        COUNT(*),
+        2
+    ) AS project_progress
+
+FROM project_tasks_raw;
+
+______________________________________________
+
+Strategic Analysis)
+
+Aquí identificas dónde concentrar esfuerzo.
+
+SQL – Horas por prioridad
+SELECT
+    Prioridad,
+    SUM(Horas_Estimadas) AS total_hours
+
+FROM project_tasks_raw
+
+GROUP BY Prioridad
+ORDER BY total_hours DESC;
+SQL – Horas por módulo
+SELECT
+    Modulo,
+    SUM(Horas_Estimadas) AS module_hours
+
+FROM project_tasks_raw
+
+GROUP BY Modulo
+ORDER BY module_hours DESC;
+SQL – Prioridad + módulo
+SELECT
+    Modulo,
+    Prioridad,
+    SUM(Horas_Estimadas) AS total_hours
+
+FROM project_tasks_raw
+
+GROUP BY Modulo, Prioridad
+ORDER BY total_hours DESC;
